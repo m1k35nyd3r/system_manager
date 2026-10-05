@@ -114,6 +114,10 @@ class Stats:
             return out
         return self._once("systemd", collect)
 
+    def bluetooth(self) -> list[dict]:
+        """Connected Bluetooth devices: {name, address, percent (None if unreported), charging}."""
+        return self._once("bluetooth", _bluetooth_devices)
+
     def top_procs(self, n: int = 6, key: str = "cpu") -> list[dict]:
         def collect():
             live = {}
@@ -140,6 +144,49 @@ def _systemctl(*args: str) -> str:
     except (OSError, subprocess.TimeoutExpired):
         return ""
     return r.stdout.strip()
+
+
+def _run(*cmd: str) -> str:
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
+    except (OSError, subprocess.TimeoutExpired):
+        return ""
+    return r.stdout
+
+
+def _upower_batteries() -> dict[str, dict]:
+    """Battery info from UPower keyed by upper-case serial (a Bluetooth address for BT devices)."""
+    out = {}
+    for path in _run("upower", "-e").split():
+        if "DisplayDevice" in path:
+            continue
+        info = {}
+        for line in _run("upower", "-i", path).splitlines():
+            key, _, val = line.strip().partition(":")
+            info[key] = val.strip()
+        serial = info.get("serial", "").upper()
+        pct = info.get("percentage", "")
+        # UPower appends "(should be ignored)" when the device doesn't really report a level.
+        if serial:
+            out[serial] = {"percent": float(pct[:-1]) if pct.endswith("%") else None,
+                           "charging": info.get("state") in ("charging", "pending-charge")}
+    return out
+
+
+def _bluetooth_devices() -> list[dict]:
+    if not (shutil.which("bluetoothctl") and shutil.which("upower")):
+        return []
+    batteries = _upower_batteries()
+    devices = []
+    for line in _run("bluetoothctl", "devices", "Connected").splitlines():
+        parts = line.split(None, 2)
+        if len(parts) < 3 or parts[0] != "Device":
+            continue
+        addr, name = parts[1].upper(), parts[2]
+        bat = batteries.get(addr, {})
+        devices.append({"name": name, "address": addr,
+                        "percent": bat.get("percent"), "charging": bat.get("charging", False)})
+    return devices
 
 
 def fmt_bytes(n: float, suffix: str = "") -> str:

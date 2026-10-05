@@ -3,6 +3,12 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- Bluetooth widget: battery level of every connected Bluetooth device (Linux; needs `bluetoothctl` and `upower`). Off by default.
+- `Stats.bluetooth()` and a `low_is_bad` option on `Bar` for charge-style levels.
+
 ## [0.6.0] - 2026-10-04
 
 ### Added

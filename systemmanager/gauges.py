@@ -56,11 +56,12 @@ class Gauge(QWidget):
 
 
 class Bar(QWidget):
-    """Horizontal usage bar, 0-100."""
+    """Horizontal usage bar, 0-100. With `low_is_bad` the colors flip, for levels like battery charge."""
 
-    def __init__(self, height: int = 8, parent=None):
+    def __init__(self, height: int = 8, parent=None, low_is_bad: bool = False):
         super().__init__(parent)
         self.value = 0.0
+        self.low_is_bad = low_is_bad
         self.setFixedHeight(height)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
@@ -75,7 +76,7 @@ class Bar(QWidget):
         p.setPen(Qt.NoPen)
         p.setBrush(TRACK)
         p.drawRoundedRect(r, r.height() / 2, r.height() / 2)
-        p.setBrush(level_color(self.value))
+        p.setBrush(level_color(100 - self.value if self.low_is_bad else self.value))
         p.drawRoundedRect(QRectF(0, 0, max(r.height(), r.width() * self.value / 100), r.height()),
                           r.height() / 2, r.height() / 2)
 

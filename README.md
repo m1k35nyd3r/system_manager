@@ -48,7 +48,7 @@ A widget can opt out of platforms it doesn't support by setting `supported = Fal
 
 The grid adapts to the window width: wide windows show several columns, and narrow ones stack the cards in a single column.
 
-Built-in widgets: `cpu`, `memory`, `disks`, `network`, `processes`, `systemd` (off by default).
+Built-in widgets: `cpu`, `memory`, `disks`, `network`, `processes`, `systemd` and `bluetooth` (both off by default; Linux only, need `systemctl` / `bluetoothctl` + `upower`).
 
 The window size (and maximized state) is saved as you resize, and used the next time it starts. On Wayland the compositor decides where a window appears, so only the size carries over.
 
@@ -77,7 +77,7 @@ class HelloWidget(DashboardWidget):
         self.label.setText(f"CPU {stats.cpu_total():.0f}%")
 ```
 
-`systemmanager.api` also exports `Gauge`, `Bar`, `Sparkline`, `level_color` and `fmt_bytes` for drawing. The `stats` object is a shared sampler (`cpu_cores()`, `cpu_total()`, `memory()`, `swap()`, `disks()`, `net_rate()`, `top_procs()`, `systemd()`); each value is computed at most once per second no matter how many widgets read it. A plugin that fails to load or raises in `update_data` is reported in the title bar and the log, and never takes the dashboard down.
+`systemmanager.api` also exports `Gauge`, `Bar`, `Sparkline`, `level_color` and `fmt_bytes` for drawing. The `stats` object is a shared sampler (`cpu_cores()`, `cpu_total()`, `memory()`, `swap()`, `disks()`, `net_rate()`, `top_procs()`, `systemd()`, `bluetooth()`); each value is computed at most once per second no matter how many widgets read it. A plugin that fails to load or raises in `update_data` is reported in the title bar and the log, and never takes the dashboard down.
 
 ## Notes
 
